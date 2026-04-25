@@ -160,6 +160,42 @@ exports.updateProduct = async (req, res) => {
   }
 };
 
+// Delete product (seller only)
+exports.deleteProduct = async (req, res) => {
+  try {
+    if (req.user.role !== "seller") {
+      return res.status(403).json({ message: "Only sellers can delete products" });
+    }
+
+    const productId = req.params.id;
+
+    if (!productId) {
+      return res.status(400).json({ message: "Product ID is required" });
+    }
+
+    // Find product and verify ownership
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Check if product belongs to current seller
+    if (product.seller.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "You can only delete your own products" });
+    }
+
+    // Delete the product
+    await Product.findByIdAndDelete(productId);
+
+    console.log('Product deleted successfully:', productId);
+    res.json({ message: "Product deleted successfully" });
+
+  } catch (error) {
+    console.log('Delete product error:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // Get single product by id
 exports.getProduct = async (req, res) => {
   try {
