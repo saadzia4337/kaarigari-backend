@@ -79,7 +79,7 @@ exports.listProducts = async (req, res) => {
     products = await Product.find(filter)
       .populate("seller", "firstName lastName shopName profilePic city bestSeller")
       .sort({ createdAt: -1 })
-      .limit(req.query.limit ? parseInt(req.query.limit) : 20);
+      .limit(req.query.limit ? parseInt(req.query.limit) : 100);
     res.json(products);
   } catch (error) {
     res.status(500).json({ message: error.message });
