@@ -7,18 +7,14 @@ exports.createProduct = async (req, res) => {
       return res.status(403).json({ message: "Only sellers can add products" });
     }
 
-    const images = req.files?.images?.length
-      ? req.files.images.map((f) => f.path)
+    const images = req.files && req.files.length
+      ? req.files.map((f) => f.path)
       : [];
     if (images.length < 1 || images.length > 5) {
       return res.status(400).json({
         message: "Product must have between 1 and 5 images",
       });
     }
-
-    const tryOnImagePath = req.files?.tryOnImage?.length
-      ? req.files.tryOnImage[0].path
-      : null;
 
     const { title, description, category, quantity, price, sizes: sizesRaw } = req.body;
     if (!title || description === undefined || quantity === undefined || price === undefined) {
@@ -51,7 +47,6 @@ exports.createProduct = async (req, res) => {
       price: numPrice,
       seller: req.user._id,
       sizes,
-      tryOnImage: tryOnImagePath,
     });
 
     const populated = await Product.findById(product._id).populate("seller", "firstName lastName shopName profilePic city");
@@ -82,7 +77,6 @@ exports.listProducts = async (req, res) => {
     }
     
     products = await Product.find(filter)
-      .select("images title description category quantity price seller sizes averageRating reviewCount tryOnImage createdAt")
       .populate("seller", "firstName lastName shopName profilePic city bestSeller")
       .sort({ createdAt: -1 })
       .limit(req.query.limit ? parseInt(req.query.limit) : 20);
@@ -212,12 +206,10 @@ exports.deleteProduct = async (req, res) => {
 // Get single product by id
 exports.getProduct = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id)
-      .select("images title description category quantity price seller sizes averageRating reviewCount tryOnImage createdAt")
-      .populate(
-        "seller",
-        "firstName lastName shopName profilePic email"
-      );
+    const product = await Product.findById(req.params.id).populate(
+      "seller",
+      "firstName lastName shopName profilePic email"
+    );
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
