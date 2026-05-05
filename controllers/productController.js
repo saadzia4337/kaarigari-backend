@@ -56,11 +56,12 @@ exports.createProduct = async (req, res) => {
   }
 };
 
-// List all products (optional: ?sellerId=..., ?bestSeller=true)
+// List all products (optional: ?sellerId=..., ?bestSeller=true, ?category=...)
 exports.listProducts = async (req, res) => {
   try {
     const filter = {};
     if (req.query.sellerId) filter.seller = req.query.sellerId;
+    if (req.query.category) filter.category = req.query.category;
     
     let products;
     if (req.query.bestSeller === 'true') {
@@ -70,9 +71,15 @@ exports.listProducts = async (req, res) => {
       filter.seller = { $in: bestSellerIds.map(u => u._id) };
     }
     
+    // Exclude current product if productId is provided
+    if (req.query.excludeId) {
+      filter._id = { $ne: req.query.excludeId };
+    }
+    
     products = await Product.find(filter)
       .populate("seller", "firstName lastName shopName profilePic city bestSeller")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .limit(req.query.limit ? parseInt(req.query.limit) : 20);
     res.json(products);
   } catch (error) {
     res.status(500).json({ message: error.message });
