@@ -57,6 +57,11 @@ const productSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    tryOnImage: {
+      type: String,
+      required: false,
+      trim: true,
+    },
   },
   { timestamps: true }
 );
