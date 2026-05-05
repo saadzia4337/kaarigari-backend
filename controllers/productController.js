@@ -56,13 +56,14 @@ exports.createProduct = async (req, res) => {
   }
 };
 
-// List all products (optional: ?sellerId=..., ?bestSeller=true, ?category=...)
+
+// List products (public, filterable: sellerId, bestSeller, category, excludeId, limit) - Updated limit to 100
 exports.listProducts = async (req, res) => {
   try {
     const filter = {};
     if (req.query.sellerId) filter.seller = req.query.sellerId;
     if (req.query.category) filter.category = req.query.category;
-    
+    // Trigger Railway redeploy
     let products;
     if (req.query.bestSeller === 'true') {
       // Get products from best sellers only
