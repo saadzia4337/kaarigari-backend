@@ -1,6 +1,7 @@
+
 /**
  * Seed products for all sellers. Run from backend root: node scripts/seedProducts.js
- * Creates 10 products for each seller using random categories
+ * Creates 5 products for each seller using random categories
  */
 require("dotenv").config({ path: require("path").join(__dirname, "..", ".env") });
 const mongoose = require("mongoose");
@@ -96,7 +97,7 @@ async function seedProducts() {
     for (const seller of sellers) {
       console.log(`\nCreating products for seller: ${seller.firstName} ${seller.lastName}`);
       
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 5; i++) {
         const category = getRandomItem(categories);
         const templates = productTemplates[category.title] || ["Product"];
         const template = getRandomItem(templates);

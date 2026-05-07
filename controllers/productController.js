@@ -7,9 +7,12 @@ exports.createProduct = async (req, res) => {
       return res.status(403).json({ message: "Only sellers can add products" });
     }
 
-    const images = req.files && req.files.length
-      ? req.files.map((f) => f.path)
-      : [];
+    const imageFiles = req.files && req.files.images ? req.files.images : [];
+    const images = imageFiles.length ? imageFiles.map((f) => f.path.replace(/\\/g, "/")) : [];
+    const tryOnArr = req.files && req.files.tryOnOverlay ? req.files.tryOnOverlay : [];
+    const tryOnOverlay =
+      tryOnArr.length > 0 && tryOnArr[0].path ? tryOnArr[0].path.replace(/\\/g, "/") : "";
+
     if (images.length < 1 || images.length > 5) {
       return res.status(400).json({
         message: "Product must have between 1 and 5 images",
@@ -40,6 +43,7 @@ exports.createProduct = async (req, res) => {
 
     const product = await Product.create({
       images,
+      tryOnOverlay,
       title: title.trim(),
       description: description.trim(),
       category: (category != null ? String(category) : "").trim(),
@@ -146,6 +150,13 @@ exports.updateProduct = async (req, res) => {
       } catch (e) {
         console.log('Invalid sizes JSON:', e);
       }
+    }
+
+    const tryOnArr = req.files && req.files.tryOnOverlay ? req.files.tryOnOverlay : [];
+    if (tryOnArr.length > 0 && tryOnArr[0].path) {
+      updateData.tryOnOverlay = tryOnArr[0].path.replace(/\\/g, "/");
+    } else if (req.body.removeTryOnOverlay === "true" || req.body.removeTryOnOverlay === true) {
+      updateData.tryOnOverlay = "";
     }
 
     const updatedProduct = await Product.findByIdAndUpdate(
